@@ -29,6 +29,8 @@ const getNodeRender = (node) => {
 };
 
 const Node = ({ node, selected, setSelected, setDragging, panning }) => {
+  const margin = 50;
+
   return (
     <Draggable
       position={node.position}
@@ -52,9 +54,6 @@ const Node = ({ node, selected, setSelected, setDragging, panning }) => {
           position: "absolute",
           width: "auto",
           height: "auto",
-          outlineStyle: selected == node.id ? "solid" : "none",
-          outlineWidth: "3px",
-          outlineColor: "black",
           transformOrigin: "center",
         }}
         onClick={(e) => {
@@ -62,6 +61,85 @@ const Node = ({ node, selected, setSelected, setDragging, panning }) => {
           e.stopPropagation();
         }}
       >
+        {selected === node.id && (
+          <svg
+            className="absolute"
+            style={{
+              transform: `translate(${-margin / 2}px, ${-margin / 2}px)`,
+            }}
+            width={node.scale.x + margin}
+            height={node.scale.y + margin}
+          >
+            <g>
+              <rect
+                width={node.scale.x}
+                height={node.scale.y}
+                x={margin / 2}
+                y={margin / 2}
+                style={{
+                  fill: "none",
+                  strokeWidth: 3,
+                  stroke: "black",
+                }}
+              />
+              // top left
+              <circle
+                r={6}
+                cx={margin / 2}
+                cy={margin / 2}
+                style={{
+                  fill: "white",
+                  strokeWidth: 3,
+                  stroke: "black",
+                }}
+              />
+              // top
+              <circle
+                r={6}
+                cx={margin / 2 + node.scale.x / 2}
+                cy={margin / 2}
+                style={{
+                  fill: "white",
+                  strokeWidth: 3,
+                  stroke: "black",
+                }}
+              />
+              // top right
+              <circle
+                r={6}
+                cx={margin / 2 + node.scale.x}
+                cy={margin / 2}
+                style={{
+                  fill: "white",
+                  strokeWidth: 3,
+                  stroke: "black",
+                }}
+              />
+              // bottom left
+              <circle
+                r={6}
+                cx={margin / 2}
+                cy={margin / 2 + node.scale.y}
+                style={{
+                  fill: "white",
+                  strokeWidth: 3,
+                  stroke: "black",
+                }}
+              />
+              // bottom right
+              <circle
+                r={6}
+                cx={margin / 2 + node.scale.x}
+                cy={margin / 2 + node.scale.y}
+                style={{
+                  fill: "white",
+                  strokeWidth: 3,
+                  stroke: "black",
+                }}
+              />
+            </g>
+          </svg>
+        )}
         {getNodeRender(node)}
       </div>
     </Draggable>
