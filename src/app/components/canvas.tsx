@@ -1,32 +1,33 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Node from "./node";
 import Draggable from "react-draggable";
 
 const Canvas = ({ state }) => {
-  const [selected, setSelected] = useState("");
+  const [isSelected, setIsSelected] = useState("");
   const [transform, setTransform] = useState({
     position: { x: 0, y: 0 },
     scale: 1,
   });
-  const [panning, setPanning] = useState(false);
-  const [dragging, setDragging] = useState(false);
+  const [isPanning, setisPanning] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const nodeRef = useRef(null);
 
   return (
     <div
       tabIndex={0}
       className={`w-full h-full overflow-hidden
-      ${panning ? "cursor-grab" : "cursor-default"} 
+      ${isPanning ? "cursor-grab" : "cursor-default"} 
       `}
       onClick={(e) => {
-        if (!dragging) setSelected("");
+        if (!isDragging) setIsSelected("");
       }}
       onKeyDown={(e) => {
-        if (e.key === " ") setPanning(true);
+        if (e.key === " ") setisPanning(true);
       }}
       onKeyUp={(e) => {
-        if (e.key === " ") setPanning(false);
+        if (e.key === " ") setisPanning(false);
       }}
     >
       <Draggable
@@ -37,17 +38,19 @@ const Canvas = ({ state }) => {
             y: transform.position.y + data.deltaY,
           };
         }}
-        disabled={!panning}
+        disabled={!isPanning}
+        nodeRef={nodeRef}
       >
-        <div>
+        <div ref={nodeRef}>
           {state.nodes.map((node) => {
             return (
               <Node
                 node={node}
-                selected={selected}
-                setSelected={setSelected}
-                setDragging={setDragging}
-                panning={panning}
+                isSelected={isSelected}
+                setIsSelected={setIsSelected}
+                setIsDragging={setIsDragging}
+                isPanning={isPanning}
+                key={node.id}
               />
             );
           })}

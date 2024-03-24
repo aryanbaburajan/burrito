@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Draggable, { DraggableCore } from "react-draggable";
 import styles from "./node.module.css";
 
@@ -8,18 +8,20 @@ const getNodeRender = (node) => {
   switch (node.type) {
     case "text":
       if (node.data.scale == "auto") {
-        return <p style={{}}>{node.data.content}</p>;
+        return <p>{node.data.content}</p>;
       }
       break;
 
     case "img":
       return (
-        <img
-          className="pointer-events-none"
-          width={node.scale.x}
-          height={node.scale.y}
-          src={node.data.src}
-        />
+        <>
+          <img
+            className="object-fill"
+            style={{ width: node.scale.x, height: node.scale.y }}
+            src={node.data.src}
+          />
+          <h3>{node.scale.x}</h3>
+        </>
       );
       break;
 
@@ -28,8 +30,18 @@ const getNodeRender = (node) => {
   }
 };
 
-const Node = ({ node, selected, setSelected, setDragging, panning }) => {
+const Node = ({
+  node,
+  isSelected,
+  setIsSelected,
+  setIsDragging,
+  isPanning,
+}) => {
   const margin = 50;
+  const nodeRef = useRef(null);
+  const [isScaling, setIsScaling] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [initialScale, setInitialScale] = useState({ x: 0, y: 0 });
 
   return (
     <Draggable
@@ -41,13 +53,14 @@ const Node = ({ node, selected, setSelected, setDragging, panning }) => {
         };
       }}
       onStart={(e, data) => {
-        setDragging(true);
-        if (selected != node.id) setSelected(node.id);
+        setIsDragging(true);
+        if (isSelected != node.id) setIsSelected(node.id);
       }}
       onStop={(e, data) => {
-        setDragging(false);
+        setIsDragging(false);
       }}
-      disabled={panning}
+      disabled={isPanning || isScaling}
+      nodeRef={nodeRef}
     >
       <div
         style={{
@@ -57,11 +70,12 @@ const Node = ({ node, selected, setSelected, setDragging, panning }) => {
           transformOrigin: "center",
         }}
         onClick={(e) => {
-          setSelected(node.id);
+          setIsSelected(node.id);
           e.stopPropagation();
         }}
+        ref={nodeRef}
       >
-        {selected === node.id && (
+        {isSelected === node.id && (
           <svg
             className="absolute"
             style={{
@@ -110,9 +124,28 @@ const Node = ({ node, selected, setSelected, setDragging, panning }) => {
                 cx={margin / 2 + node.scale.x}
                 cy={margin / 2}
                 style={{
-                  fill: "white",
+                  fill: isScaling ? "black" : "white",
                   strokeWidth: 3,
                   stroke: "black",
+                }}
+                onMouseDown={(e) => {
+                  setIsScaling(true);
+                  setDragStart({ x: e.clientX, y: e.clientY });
+                  setInitialScale(node.scale);
+                  e.stopPropagation();
+                }}
+                onMouseMove={(e) => {
+                  if (isScaling) {
+                    console.log(node.scale);
+                    node.scale = {
+                      x: e.clientX,
+                      y: Math.max(0, initialScale.y + e.clientY - dragStart.y),
+                    };
+                    console.log(node.scale);
+                  }
+                }}
+                onMouseUp={(e) => {
+                  setIsScaling(false);
                 }}
               />
               // bottom left
